@@ -1,369 +1,99 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Sekolah</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #e6ecef;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .neumorphic {
-            background: #e6ecef;
-            box-shadow: 8px 8px 16px #c2c9cc, -8px -8px 16px #ffffff;
-            border-radius: 1rem;
-        }
-        .neumorphic-input {
-            background: #e6ecef;
-            box-shadow: inset 4px 4px 8px #c2c9cc, inset -4px -4px 8px #ffffff;
-            border: none;
-            border-radius: 0.5rem;
-        }
-        .primary-btn {
-            background: #008080;
-            color: white;
-            box-shadow: 4px 4px 8px #c2c9cc, -4px -4px 8px #ffffff;
-            transition: all 0.3s ease;
-        }
-        .primary-btn:hover {
-            background: #006666;
-            box-shadow: inset 2px 2px 4px #004d4d, inset -2px -2px 4px #008080;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .min-h-screen {
-            min-height: 100vh;
-            padding: 1rem;
-            box-sizing: border-box;
-        }
-        .flex {
-            display: flex;
-        }
-        .items-center {
-            align-items: center;
-        }
-        .justify-center {
-            justify-content: center;
-        }
-        .space-y-4 > * + * {
-            margin-top: 1rem;
-        }
-        .space-x-4 > * + * {
-            margin-left: 1rem;
-        }
-        .w-full {
-            width: 100%;
-        }
-        .max-w-md {
-            max-width: 28rem;
-        }
-        .p-3 {
-            padding: 0.75rem;
-        }
-        .p-4 {
-            padding: 1rem;
-        }
-        .p-6 {
-            padding: 1.5rem;
-        }
-        .mb-4 {
-            margin-bottom: 1rem;
-        }
-        .mb-6 {
-            margin-bottom: 1.5rem;
-        }
-        .text-teal-800 {
-            color: #1d4e4e;
-        }
-        .text-teal-600 {
-            color: #2e6b6b;
-        }
-        .text-2xl {
-            font-size: 1.5rem;
-        }
-        .text-xl {
-            font-size: 1.25rem;
-        }
-        .text-lg {
-            font-size: 1.125rem;
-        }
-        .font-semibold {
-            font-weight: 600;
-        }
-        .font-medium {
-            font-weight: 500;
-        }
-        .text-center {
-            text-align: center;
-        }
-        .focus\:outline-none:focus {
-            outline: none;
-        }
-        .rounded-lg {
-            border-radius: 0.5rem;
-        }
-        .rounded-full {
-            border-radius: 9999px;
-        }
-        .w-20 {
-            width: 5rem;
-        }
-        .h-20 {
-            height: 5rem;
-        }
-        .block {
-            display: block;
-        }
-        .mt-2 {
-            margin-top: 0.5rem;
-        }
-        .mt-4 {
-            margin-top: 1rem;
-        }
-        .fixed {
-            position: fixed;
-        }
-        .bottom-0 {
-            bottom: 0;
-        }
-        .left-0 {
-            left: 0;
-        }
-        .right-0 {
-            right: 0;
-        }
-        .bg-teal-800 {
-            background-color: #1d4e4e;
-        }
-        .text-white {
-            color: white;
-        }
-        .justify-around {
-            justify-content: space-around;
-        }
-        .overflow-x-auto {
-            overflow-x: auto;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            padding: 0.5rem;
-            text-align: left;
-        }
-        .p-2 {
-            padding: 0.5rem;
-        }
-        input[type="number"] {
-            appearance: textfield;
-        }
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            appearance: none;
-        }
-    </style>
-</head>
-<body>
-    <!-- Login Page -->
-    <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
-        <div class="neumorphic p-6 w-full max-w-md">
-            <h2 class="text-2xl font-semibold text-center text-teal-800 mb-6">Masuk</h2>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <input type="text" id="pin" placeholder="Masukkan PIN" class="neumorphic-input w-full p-3 text-teal-800 focus:outline-none" required>
-                </div>
-                <button type="submit" class="primary-btn w-full p-3 rounded-lg font-medium">Masuk</button>
-            </form>
-        </div>
-    </div>
+function doGet() {
+    try {
+        return HtmlService.createHtmlOutputFromFile('index.html')
+            .setTitle('Dashboard Sekolah');
+    } catch (e) {
+        Logger.log('Error doGet: ' + e);
+        return ContentService.createTextOutput('Error: Gagal memuat halaman');
+    }
+}
 
-    <!-- User Dashboard -->
-    <div id="user-dashboard" class="min-h-screen p-4 hidden">
-        <div class="neumorphic p-6 mb-6">
-            <div class="flex items-center space-x-4">
-                <img id="profile-pic" src="https://via.placeholder.com/80" alt="Profil" class="w-20 h-20 rounded-full">
-                <div>
-                    <h2 id="user-name" class="text-xl font-semibold text-teal-800">Nama User</h2>
-                    <p class="text-teal-600">Siswa</p>
-                </div>
-            </div>
-            <label class="block mt-4">
-                <span class="text-teal-800">Ganti Foto Profil</span>
-                <input type="file" id="profile-upload" accept="image/*" class="mt-2 neumorphic-input w-full p-2">
-            </label>
-        </div>
-        <div class="space-y-4">
-            <h3 class="text-lg font-medium text-teal-800">Nilai</h3>
-            <div id="grades-container" class="space-y-4">
-                <!-- Nilai muncul di sini -->
-            </div>
-        </div>
-        <nav class="fixed bottom-0 left-0 right-0 bg-teal-800 p-4 flex justify-around text-white">
-            <button onclick="showPage('user-dashboard')" class="font-medium">Beranda</button>
-            <button onclick="logout()" class="font-medium">Keluar</button>
-        </nav>
-    </div>
-
-    <!-- Admin Dashboard -->
-    <div id="admin-dashboard" class="min-h-screen p-4 hidden">
-        <h2 class="text-2xl font-semibold text-teal-800 mb-6">Dashboard Admin</h2>
-        <div class="neumorphic p-6 mb-6">
-            <h3 class="text-lg font-medium text-teal-800 mb-4">Upload Nilai</h3>
-            <input type="file" id="grades-upload" accept=".xlsx,.csv" class="neumorphic-input w-full p-2 mb-4">
-            <button onclick="uploadGrades()" class="primary-btn w-full p-3 rounded-lg font-medium">Upload</button>
-        </div>
-        <div class="neumorphic p-6">
-            <h3 class="text-lg font-medium text-teal-800 mb-4">Edit Nilai</h3>
-            <div id="grades-table" class="overflow-x-auto">
-                <!-- Tabel nilai di sini -->
-            </div>
-        </div>
-        <nav class="fixed bottom-0 left-0 right-0 bg-teal-800 p-4 flex justify-around text-white">
-            <button onclick="showPage('admin-dashboard')" class="font-medium">Beranda</button>
-            <button onclick="logout()" class="font-medium">Keluar</button>
-        </nav>
-    </div>
-
-    <script>
-        function showPage(pageId) {
-            console.log('Menampilkan halaman:', pageId); // Debug
-            document.querySelectorAll('div[id$="-page"], div[id$="-dashboard"]').forEach(div => {
-                div.classList.add('hidden');
-            });
-            const page = document.getElementById(pageId);
-            if (page) {
-                page.classList.remove('hidden');
-                console.log('Halaman ditampilkan:', pageId);
-            } else {
-                console.error('Halaman tidak ditemukan:', pageId);
+function verifyPin(pin) {
+    try {
+        if (!pin || pin === 'undefined') {
+            Logger.log('PIN tidak valid: ' + pin);
+            throw new Error('PIN tidak valid');
+        }
+        const spreadsheetId = 'YOUR_SPREADSHEET_ID'; // Ganti dengan ID spreadsheet lu
+        const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName('Users');
+        if (!sheet) {
+            Logger.log('Sheet "Users" tidak ditemukan');
+            throw new Error('Sheet "Users" tidak ditemukan');
+        }
+        const data = sheet.getDataRange().getValues();
+        Logger.log('Data Users: ' + JSON.stringify(data));
+        for (let i = 1; i < data.length; i++) {
+            const sheetPin = String(data[i][0]);
+            Logger.log('Membandingkan PIN: ' + sheetPin + ' dengan input: ' + pin);
+            if (sheetPin === String(pin)) {
+                const response = {
+                    role: data[i][1] || 'unknown',
+                    user: {
+                        name: data[i][2] || 'Unknown',
+                        photo: data[i][3] || ''
+                    }
+                };
+                Logger.log('PIN cocok, response: ' + JSON.stringify(response));
+                return response;
             }
         }
+        Logger.log('PIN tidak ditemukan: ' + pin);
+        return { role: 'invalid' };
+    } catch (e) {
+        Logger.log('Error verifyPin: ' + e);
+        throw new Error('Gagal verifikasi PIN: ' + e.message);
+    }
+}
 
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const pinInput = document.getElementById('pin');
-            const pin = pinInput.value.trim();
-            console.log('PIN yang dimasukkan:', pin); // Debug PIN
-            if (!pin) {
-                alert('Masukkan PIN!');
-                return;
-            }
-            try {
-                const response = await google.script.run.withSuccessHandler(result => result).verifyPin(pin);
-                console.log('Response dari verifyPin:', response); // Debug response
-                if (!response || typeof response !== 'object') {
-                    alert('Gagal login: Respons server tidak valid');
-                    return;
-                }
-                if (response.role === 'user') {
-                    showPage('user-dashboard');
-                    loadUserData(response.user);
-                } else if (response.role === 'admin') {
-                    showPage('admin-dashboard');
-                    loadAdminData();
-                } else {
-                    alert('PIN salah!');
-                }
-            } catch (error) {
-                console.error('Error login:', error);
-                alert('Gagal login: ' + error.message);
-            }
-        });
+function getGrades() {
+    try {
+        const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
+        if (!sheet) throw new Error('Sheet "Nilai" tidak ditemukan');
+        const data = sheet.getDataRange().getValues();
+        const grades = data.slice(1).map(row => ({
+            student: row[0] || '',
+            subject: row[1] || '',
+            score: row[2] || 0
+        }));
+        Logger.log('Data nilai dikirim: ' + JSON.stringify(grades));
+        return grades;
+    } catch (e) {
+        Logger.log('Error getGrades: ' + e);
+        throw new Error('Gagal mengambil data nilai: ' + e.message);
+    }
+}
 
-        async function loadUserData(user) {
-            try {
-                console.log('Memuat data user:', user); // Debug
-                if (!user || !user.name) {
-                    throw new Error('Data user tidak valid');
-                }
-                document.getElementById('user-name').textContent = user.name;
-                document.getElementById('profile-pic').src = user.photo || 'https://via.placeholder.com/80';
-                const grades = await google.script.run.withSuccessHandler(result => result).getGrades();
-                console.log('Data nilai:', grades); // Debug
-                const container = document.getElementById('grades-container');
-                container.innerHTML = grades.map(grade => `
-                    <div class="neumorphic p-4">
-                        <h4 class="text-teal-800 font-medium">${grade.subject}</h4>
-                        <p class="text-teal-600">Nilai: ${grade.score}</p>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error load user data:', error);
-                alert('Gagal memuat data user!');
-            }
-        }
+function uploadProfilePic(profileFile) {
+    try {
+        const folder = DriveApp.getFolderById('1dqeG7I3JZ15QyXdaPeavWFdt8joMdfaG');
+        const blob = Utilities.newBlob(profileFile.data, profileFile.mimeType, profileFile.fileName);
+        const uploadedFile = folder.createFile(blob);
+        return uploadedFile.getUrl();
+    } catch (e) {
+        Logger.log('Error uploadProfilePic: ' + e);
+        throw new Error('Gagal upload foto profil: ' + e.message);
+    }
+}
 
-        async function loadAdminData() {
-            try {
-                console.log('Memuat data admin'); // Debug
-                const grades = await google.script.run.withSuccessHandler(result => result).getGrades();
-                console.log('Data nilai admin:', grades); // Debug
-                const table = document.getElementById('grades-table');
-                table.innerHTML = `
-                    <table class="w-full text-teal-800">
-                        <thead>
-                            <tr>
-                                <th class="p-2">Siswa</th>
-                                <th class="p-2">Mapel</th>
-                                <th class="p-2">Nilai</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${grades.map((grade, i) => `
-                                <tr>
-                                    <td class="p-2">${grade.student}</td>
-                                    <td class="p-2">${grade.subject}</td>
-                                    <td class="p-2">
-                                        <input type="number" value="${grade.score}" onchange="updateGrade(${i}, this.value)" class="neumorphic-input p-1 w-full">
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                `;
-            } catch (error) {
-                console.error('Error load admin data:', error);
-                alert('Gagal memuat data admin!');
-            }
-        }
+function uploadGrades(gradesFile) {
+    try {
+        const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
+        sheet.clear();
+        const blob = Utilities.newBlob(gradesFile.data, gradesFile.mimeType, gradesFile.fileName);
+        const csv = Utilities.parseCsv(blob.getDataAsString());
+        sheet.getRange(1, 1, csv.length, csv[0].length).setValues(csv);
+    } catch (e) {
+        Logger.log('Error uploadGrades: ' + e);
+        throw new Error('Gagal upload nilai: ' + e.message);
+    }
+}
 
-        async function updateGrade(index, score) {
-            try {
-                await google.script.run.updateGrade(index, parseInt(score));
-            } catch (error) {
-                console.error('Error update grade:', error);
-                alert('Gagal update nilai!');
-            }
-        }
-
-        async function uploadGrades() {
-            const gradesFile = document.getElementById('grades-upload').files[0];
-            if (gradesFile) {
-                const formData = new FormData();
-                formData.append('file', gradesFile);
-                try {
-                    await google.script.run.withSuccessHandler(() => loadAdminData()).uploadGrades(formData);
-                    alert('Nilai berhasil diupload!');
-                } catch (error) {
-                    console.error('Error upload grades:', error);
-                    alert('Gagal upload nilai!');
-                }
-            }
-        }
-
-        function logout() {
-            showPage('login-page');
-            document.getElementById('login-form').reset();
-        }
-    </script>
-</body>
-</html>
+function updateGrade(index, score) {
+    try {
+        const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
+        sheet.getRange(index + 2, 3).setValue(score);
+    } catch (e) {
+        Logger.log('Error updateGrade: ' + e);
+        throw new Error('Gagal update nilai: ' + e.message);
+    }
+}
