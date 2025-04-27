@@ -6,7 +6,33 @@
     <title>Dashboard Sekolah</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles/main.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e6ecef;
+        }
+        .neumorphic {
+            background: #e6ecef;
+            box-shadow: 8px 8px 16px #c2c9cc, -8px -8px 16px #ffffff;
+            border-radius: 1rem;
+        }
+        .neumorphic-input {
+            background: #e6ecef;
+            box-shadow: inset 4px 4px 8px #c2c9cc, inset -4px -4px 8px #ffffff;
+            border: none;
+            border-radius: 0.5rem;
+        }
+        .primary-btn {
+            background: #008080;
+            color: white;
+            box-shadow: 4px 4px 8px #c2c9cc, -4px -4px 8px #ffffff;
+            transition: all 0.3s ease;
+        }
+        .primary-btn:hover {
+            background: #006666;
+            box-shadow: inset 2px 2px 4px #004d4d, inset -2px -2px 4px #008080;
+        }
+    </style>
 </head>
 <body>
     <!-- Login Page -->
@@ -26,7 +52,7 @@
     <div id="user-dashboard" class="min-h-screen p-4 hidden">
         <div class="neumorphic p-6 mb-6">
             <div class="flex items-center space-x-4">
-                <img id="profile-pic" src="/assets/images/placeholder.png" alt="Profil" class="w-20 h-20 rounded-full">
+                <img id="profile-pic" src="https://via.placeholder.com/80" alt="Profil" class="w-20 h-20 rounded-full">
                 <div>
                     <h2 id="user-name" class="text-xl font-semibold text-teal-800">Nama User</h2>
                     <p class="text-teal-600">Siswa</p>
@@ -69,6 +95,125 @@
         </nav>
     </div>
 
-    <script src="/scripts/main.js"></script>
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('div[id$="-page"], div[id$="-dashboard"]').forEach(div => div.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pin = document.getElementById('pin').value;
+            try {
+                const response = await google.script.run.withSuccessHandler(result => result).verifyPin(pin);
+                if (response.role === 'user') {
+                    showPage('user-dashboard');
+                    loadUserData(response.user);
+                } else if (response.role === 'admin') {
+                    showPage('admin-dashboard');
+                    loadAdminData();
+                } else {
+                    alert('PIN salah!');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Gagal login: ' + error.message);
+            }
+        });
+
+        async function loadUserData(user) {
+            try {
+                document.getElementById('user-name').textContent = user.name;
+                document.getElementById('profile-pic').src = user.photo || 'https://via.placeholder.com/80';
+                const grades = await google.script.run.withSuccessHandler(result => result).getGrades();
+                const container = document.getElementById('grades-container');
+                container.innerHTML = grades.map(grade => `
+                    <div class="neumorphic p-4">
+                        <h4 class="text-teal-800 font-medium">${grade.subject}</h4>
+                        <p class="text-teal-600">Nilai: ${grade.score}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Load user data error:', error);
+                alert('Gagal memuat data user!');
+            }
+        }
+
+        document.getElementById('profile-upload').addEventListener('change', async (e) => {
+            const profileFile = e.target.files[0];
+            if (profileFile) {
+                const formData = new FormData();
+                formData.append('file', profileFile);
+                try {
+                    const newUrl = await google.script.run.withSuccessHandler(result => result).uploadProfilePic(formData);
+                    document.getElementById('profile-pic').src = newUrl;
+                } catch (error) {
+                    console.error('Upload photo error:', error);
+                    alert('Gagal upload foto!');
+                }
+            }
+        });
+
+        async function loadAdminData() {
+            try {
+                const grades = await google.script.run.withSuccessHandler(result => result).getGrades();
+                const table = document.getElementById('grades-table');
+                table.innerHTML = `
+                    <table class="w-full text-teal-800">
+                        <thead>
+                            <tr>
+                                <th class="p-2">Siswa</th>
+                                <th class="p-2">Mapel</th>
+                                <th class="p-2">Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${grades.map((grade, i) => `
+                                <tr>
+                                    <td class="p-2">${grade.student}</td>
+                                    <td class="p-2">${grade.subject}</td>
+                                    <td class="p-2">
+                                        <input type="number" value="${grade.score}" onchange="updateGrade(${i}, this.value)" class="neumorphic-input p-1 w-full">
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Load admin data error:', error);
+                alert('Gagal memuat data admin!');
+            }
+        }
+
+        async function updateGrade(index, score) {
+            try {
+                await google.script.run.updateGrade(index, parseInt(score));
+            } catch (error) {
+                console.error('Update grade error:', error);
+                alert('Gagal update nilai!');
+            }
+        }
+
+        async function uploadGrades() {
+            const gradesFile = document.getElementById('grades-upload').files[0];
+            if (gradesFile) {
+                const formData = new FormData();
+                formData.append('file', gradesFile);
+                try {
+                    await google.script.run.withSuccessHandler(() => loadAdminData()).uploadGrades(formData);
+                    alert('Nilai berhasil diupload!');
+                } catch (error) {
+                    console.error('Upload grades error:', error);
+                    alert('Gagal upload nilai!');
+                }
+            }
+        }
+
+        function logout() {
+            showPage('login-page');
+            document.getElementById('login-form').reset();
+        }
+    </script>
 </body>
 </html>
