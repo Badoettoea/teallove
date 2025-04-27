@@ -130,10 +130,16 @@ function updateGrade(gradeId, score) {
     const sheet = spreadsheet.getSheetByName('Nilai');
     const data = sheet.getDataRange().getValues();
     
+    // Validasi nilai
+    score = parseInt(score);
+    if (score < 0 || score > 100) {
+      throw new Error('Nilai harus antara 0 dan 100');
+    }
+    
     // Cari baris yang sesuai dengan gradeId
     for (let i = 1; i < data.length; i++) {
       if (String(data[i][3]) === gradeId) {
-        sheet.getRange(i + 1, 3).setValue(parseInt(score));
+        sheet.getRange(i + 1, 3).setValue(score);
         return;
       }
     }
@@ -143,6 +149,33 @@ function updateGrade(gradeId, score) {
   } catch (e) {
     Logger.log('Error updateGrade: ' + e.toString());
     throw new Error('Gagal mengupdate nilai');
+  }
+}
+
+/**
+ * Mengupdate foto profil pengguna di spreadsheet
+ * @param {string} pin - PIN pengguna
+ * @param {string} photoUrl - URL foto yang diupload
+ */
+function updateUserPhoto(pin, photoUrl) {
+  try {
+    const spreadsheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA');
+    const sheet = spreadsheet.getSheetByName('Users');
+    const data = sheet.getDataRange().getValues();
+    
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]).trim() === pin) {
+        sheet.getRange(i + 1, 4).setValue(photoUrl);
+        Logger.log('Foto profil disimpan ke sheet untuk PIN: ' + pin);
+        return;
+      }
+    }
+    
+    throw new Error('Pengguna tidak ditemukan');
+    
+  } catch (e) {
+    Logger.log('Error updateUserPhoto: ' + e.toString());
+    throw new Error('Gagal menyimpan foto profil');
   }
 }
 
