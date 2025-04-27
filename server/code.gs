@@ -1,39 +1,56 @@
 function doGet() {
-    return HtmlService.createHtmlOutputFromFile('index.html')
-        .setTitle('Dashboard Sekolah');
+    try {
+        return HtmlService.createHtmlOutputFromFile('index.html')
+            .setTitle('Dashboard Sekolah');
+    } catch (e) {
+        Logger.log('Error doGet: ' + e);
+        return ContentService.createTextOutput('Error: Gagal memuat halaman');
+    }
 }
 
 function verifyPin(pin) {
     try {
-        const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Users');
+        const spreadsheetId = '1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA'; // Ganti dengan ID spreadsheet lu
+        const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName('Users');
+        if (!sheet) {
+            Logger.log('Sheet "Users" tidak ditemukan');
+            throw new Error('Sheet "Users" tidak ditemukan');
+        }
         const data = sheet.getDataRange().getValues();
+        Logger.log('Data Users: ' + JSON.stringify(data)); // Debug data
         for (let i = 1; i < data.length; i++) {
-            if (data[i][0] === pin) {
+            Logger.log('Membandingkan PIN: ' + data[i][0] + ' dengan input: ' + pin);
+            if (data[i][0] == pin) { // Pakai == biar aman kalo PIN disimpan sebagai string/angka
                 return {
-                    role: data[i][1],
-                    user: { name: data[i][2], photo: data[i][3] }
+                    role: data[i][1] || 'unknown',
+                    user: {
+                        name: data[i][2] || 'Unknown',
+                        photo: data[i][3] || ''
+                    }
                 };
             }
         }
+        Logger.log('PIN tidak ditemukan: ' + pin);
         return { role: 'invalid' };
     } catch (e) {
         Logger.log('Error verifyPin: ' + e);
-        throw new Error('Gagal verifikasi PIN');
+        throw new Error('Gagal verifikasi PIN: ' + e.message);
     }
 }
 
 function getGrades() {
     try {
         const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
+        if (!sheet) throw new Error('Sheet "Nilai" tidak ditemukan');
         const data = sheet.getDataRange().getValues();
         return data.slice(1).map(row => ({
-            student: row[0],
-            subject: row[1],
-            score: row[2]
+            student: row[0] || '',
+            subject: row[1] || '',
+            score: row[2] || 0
         }));
     } catch (e) {
         Logger.log('Error getGrades: ' + e);
-        throw new Error('Gagal mengambil data nilai');
+        throw new Error('Gagal mengambil data nilai: ' + e.message);
     }
 }
 
@@ -45,7 +62,7 @@ function uploadProfilePic(profileFile) {
         return uploadedFile.getUrl();
     } catch (e) {
         Logger.log('Error uploadProfilePic: ' + e);
-        throw new Error('Gagal upload foto profil');
+        throw new Error('Gagal upload foto profil: ' + e.message);
     }
 }
 
@@ -58,7 +75,7 @@ function uploadGrades(gradesFile) {
         sheet.getRange(1, 1, csv.length, csv[0].length).setValues(csv);
     } catch (e) {
         Logger.log('Error uploadGrades: ' + e);
-        throw new Error('Gagal upload nilai');
+        throw new Error('Gagal upload nilai: ' + e.message);
     }
 }
 
@@ -68,6 +85,6 @@ function updateGrade(index, score) {
         sheet.getRange(index + 2, 3).setValue(score);
     } catch (e) {
         Logger.log('Error updateGrade: ' + e);
-        throw new Error('Gagal update nilai');
+        throw new Error('Gagal update nilai: ' + e.message);
     }
 }
