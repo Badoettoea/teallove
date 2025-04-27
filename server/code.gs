@@ -14,25 +14,27 @@ function verifyPin(pin) {
             Logger.log('PIN tidak valid: ' + pin);
             throw new Error('PIN tidak valid');
         }
-        const spreadsheetId = '1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA'; // Ganti dengan ID spreadsheet lu
+        const spreadsheetId = 'YOUR_SPREADSHEET_ID'; // Ganti dengan ID spreadsheet lu
         const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName('Users');
         if (!sheet) {
             Logger.log('Sheet "Users" tidak ditemukan');
             throw new Error('Sheet "Users" tidak ditemukan');
         }
         const data = sheet.getDataRange().getValues();
-        Logger.log('Data Users: ' + JSON.stringify(data)); // Debug data
+        Logger.log('Data Users: ' + JSON.stringify(data));
         for (let i = 1; i < data.length; i++) {
-            const sheetPin = String(data[i][0]); // Konversi PIN ke string
+            const sheetPin = String(data[i][0]);
             Logger.log('Membandingkan PIN: ' + sheetPin + ' dengan input: ' + pin);
             if (sheetPin === String(pin)) {
-                return {
+                const response = {
                     role: data[i][1] || 'unknown',
                     user: {
                         name: data[i][2] || 'Unknown',
                         photo: data[i][3] || ''
                     }
                 };
+                Logger.log('PIN cocok, response: ' + JSON.stringify(response));
+                return response;
             }
         }
         Logger.log('PIN tidak ditemukan: ' + pin);
@@ -45,14 +47,16 @@ function verifyPin(pin) {
 
 function getGrades() {
     try {
-        const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
+        const sheet = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID').getSheetByName('Nilai');
         if (!sheet) throw new Error('Sheet "Nilai" tidak ditemukan');
         const data = sheet.getDataRange().getValues();
-        return data.slice(1).map(row => ({
+        const grades = data.slice(1).map(row => ({
             student: row[0] || '',
             subject: row[1] || '',
             score: row[2] || 0
         }));
+        Logger.log('Data nilai dikirim: ' + JSON.stringify(grades));
+        return grades;
     } catch (e) {
         Logger.log('Error getGrades: ' + e);
         throw new Error('Gagal mengambil data nilai: ' + e.message);
@@ -61,7 +65,7 @@ function getGrades() {
 
 function uploadProfilePic(profileFile) {
     try {
-        const folder = DriveApp.getFolderById('1dqeG7I3JZ15QyXdaPeavWFdt8joMdfaG');
+        const folder = DriveApp.getFolderById('YOUR_FOLDER_ID');
         const blob = Utilities.newBlob(profileFile.data, profileFile.mimeType, profileFile.fileName);
         const uploadedFile = folder.createFile(blob);
         return uploadedFile.getUrl();
@@ -73,7 +77,7 @@ function uploadProfilePic(profileFile) {
 
 function uploadGrades(gradesFile) {
     try {
-        const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
+        const sheet = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID').getSheetByName('Nilai');
         sheet.clear();
         const blob = Utilities.newBlob(gradesFile.data, gradesFile.mimeType, gradesFile.fileName);
         const csv = Utilities.parseCsv(blob.getDataAsString());
@@ -86,7 +90,7 @@ function uploadGrades(gradesFile) {
 
 function updateGrade(index, score) {
     try {
-        const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
+        const sheet = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID').getSheetByName('Nilai');
         sheet.getRange(index + 2, 3).setValue(score);
     } catch (e) {
         Logger.log('Error updateGrade: ' + e);
