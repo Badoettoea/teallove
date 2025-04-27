@@ -4,7 +4,7 @@ function doGet() {
 }
 
 function verifyPin(pin) {
-    const sheet = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID').getSheetByName('Users');
+    const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Users');
     const data = sheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
         if (data[i][0] === pin) {
@@ -18,7 +18,7 @@ function verifyPin(pin) {
 }
 
 function getGrades() {
-    const sheet = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID').getSheetByName('Nilai');
+    const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
     const data = sheet.getDataRange().getValues();
     return data.slice(1).map(row => ({
         student: row[0],
@@ -28,14 +28,14 @@ function getGrades() {
 }
 
 function uploadProfilePic(file) {
-    const folder = DriveApp.getFolderById('YOUR_FOLDER_ID');
+    const folder = DriveApp.getFolderById('1dqeG7I3JZ15QyXdaPeavWFdt8joMdfaG');
     const blob = Utilities.newBlob(file.data, file.mimeType, file.fileName);
     const file = folder.createFile(blob);
     return file.getUrl();
 }
 
 function uploadGrades(file) {
-    const sheet = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID').getSheetByName('Nilai');
+    const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
     sheet.clear();
     const blob = Utilities.newBlob(file.data, file.mimeType, file.fileName);
     const csv = Utilities.parseCsv(blob.getDataAsString());
@@ -43,6 +43,6 @@ function uploadGrades(file) {
 }
 
 function updateGrade(index, score) {
-    const sheet = SpreadsheetApp.openById('YOUR_SPREADSHEET_ID').getSheetByName('Nilai');
+    const sheet = SpreadsheetApp.openById('1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA').getSheetByName('Nilai');
     sheet.getRange(index + 2, 3).setValue(score);
 }
