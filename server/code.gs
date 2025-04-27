@@ -10,6 +10,10 @@ function doGet() {
 
 function verifyPin(pin) {
     try {
+        if (!pin || pin === 'undefined') {
+            Logger.log('PIN tidak valid: ' + pin);
+            throw new Error('PIN tidak valid');
+        }
         const spreadsheetId = '1gf4XpJAP_GsBoHIrTzpDH8vZRZXB6Kfwg_TYsimSEeA'; // Ganti dengan ID spreadsheet lu
         const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName('Users');
         if (!sheet) {
@@ -19,8 +23,9 @@ function verifyPin(pin) {
         const data = sheet.getDataRange().getValues();
         Logger.log('Data Users: ' + JSON.stringify(data)); // Debug data
         for (let i = 1; i < data.length; i++) {
-            Logger.log('Membandingkan PIN: ' + data[i][0] + ' dengan input: ' + pin);
-            if (data[i][0] == pin) { // Pakai == biar aman kalo PIN disimpan sebagai string/angka
+            const sheetPin = String(data[i][0]); // Konversi PIN ke string
+            Logger.log('Membandingkan PIN: ' + sheetPin + ' dengan input: ' + pin);
+            if (sheetPin === String(pin)) {
                 return {
                     role: data[i][1] || 'unknown',
                     user: {
