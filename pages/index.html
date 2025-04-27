@@ -106,6 +106,12 @@
             const pin = document.getElementById('pin').value;
             try {
                 const response = await google.script.run.withSuccessHandler(result => result).verifyPin(pin);
+                if (!response) {
+                    console.error('Response undefined untuk PIN: ' + pin);
+                    alert('Gagal login: Server tidak merespons');
+                    return;
+                }
+                console.log('Response:', response); // Debug response
                 if (response.role === 'user') {
                     showPage('user-dashboard');
                     loadUserData(response.user);
