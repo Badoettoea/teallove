@@ -29,13 +29,14 @@
             display: flex;
             flex-direction: column;
             color: var(--text-dark);
+            font-size: 16px; /* Base font size */
         }
         
         /* Neumorphic Styles */
         .neumorphic {
             background: var(--bg-color);
             border-radius: 1rem;
-            box-shadow:  8px 8px 16px var(--shadow-dark),
+            box-shadow: 8px 8px 16px var(--shadow-dark),
                         -8px -8px 16px var(--shadow-light);
         }
         
@@ -95,10 +96,15 @@
             display: none;
             flex: 1;
             padding-bottom: 4rem; /* Space for navbar */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
         
         .page.active {
             display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
         
         .card {
@@ -114,7 +120,7 @@
             right: 0;
             background-color: var(--primary-dark);
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
             padding: 1rem;
             z-index: 1000;
         }
@@ -197,9 +203,62 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1001;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        /* Mobile View Adjustments */
+        @media (max-width: 768px) {
+            body {
+                font-size: 32px; /* 100% lebih besar (2x dari 16px) */
+            }
+            
+            .neumorphic-input,
+            .btn,
+            .nav-btn,
+            h2,
+            h3,
+            h4,
+            p,
+            th,
+            td {
+                font-size: 32px; /* Sesuaikan semua elemen */
+            }
+            
+            .profile-pic {
+                width: 8rem;
+                height: 8rem;
+            }
+            
+            .navbar {
+                padding: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Notification -->
+    <div id="notification" class="notification hidden">
+        <p id="notification-message"></p>
+    </div>
+
     <!-- Login Page -->
     <div id="login-page" class="page active">
         <div class="container">
@@ -244,7 +303,6 @@
         </div>
         
         <div class="navbar">
-            <button class="nav-btn" onclick="showPage('user-dashboard')">Beranda</button>
             <button class="nav-btn" onclick="logout()">Keluar</button>
         </div>
     </div>
@@ -262,6 +320,9 @@
             
             <div class="neumorphic card">
                 <h3 class="mb-3">Kelola Nilai Siswa</h3>
+                <div class="mb-3">
+                    <input type="text" id="filter-student" placeholder="Cari Siswa..." class="neumorphic-input">
+                </div>
                 <div class="table-container">
                     <table id="grades-table">
                         <thead>
@@ -269,6 +330,7 @@
                                 <th>Siswa</th>
                                 <th>Mata Pelajaran</th>
                                 <th>Nilai</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -280,7 +342,6 @@
         </div>
         
         <div class="navbar">
-            <button class="nav-btn" onclick="showPage('admin-dashboard')">Beranda</button>
             <button class="nav-btn" onclick="logout()">Keluar</button>
         </div>
     </div>
@@ -289,7 +350,8 @@
         // Global state
         const appState = {
             currentUser: null,
-            isLoading: false
+            isLoading: false,
+            allGrades: [] // Simpan semua data nilai untuk filtering
         };
         
         // DOM Elements
@@ -309,12 +371,16 @@
         const gradesTable = document.getElementById('grades-table');
         const gradesUpload = document.getElementById('grades-upload');
         const uploadGradesBtn = document.getElementById('upload-grades-btn');
+        const filterStudent = document.getElementById('filter-student');
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
         
         // Event Listeners
         document.addEventListener('DOMContentLoaded', initApp);
         loginForm.addEventListener('submit', handleLogin);
         uploadBtn.addEventListener('click', handleProfileUpload);
         uploadGradesBtn.addEventListener('click', handleGradesUpload);
+        filterStudent.addEventListener('input', handleFilterStudent);
         
         // Initialize Application
         function initApp() {
@@ -348,7 +414,7 @@
             const pin = document.getElementById('pin').value.trim();
             
             if (!pin) {
-                alert('Masukkan PIN terlebih dahulu');
+                showNotification('Masukkan PIN terlebih dahulu');
                 return;
             }
             
@@ -388,7 +454,7 @@
                 
             } catch (error) {
                 console.error('Error saat login:', error);
-                alert(`Gagal login: ${error.message}`);
+                showNotification(`Gagal login: ${error.message}`);
             } finally {
                 setLoading(false);
             }
@@ -476,35 +542,25 @@
                 
                 console.log('Data nilai admin diterima:', grades);
                 
+                appState.allGrades = grades; // Simpan untuk filtering
+                
                 if (grades.length === 0) {
                     gradesTable.querySelector('tbody').innerHTML = `
                         <tr>
-                            <td colspan="3" class="text-center">Belum ada data nilai</td>
+                            <td colspan="4" class="text-center">Belum ada data nilai</td>
                         </tr>
                     `;
                     return;
                 }
                 
                 // Render grades table
-                gradesTable.querySelector('tbody').innerHTML = grades.map(grade => `
-                    <tr>
-                        <td>${grade.student}</td>
-                        <td>${grade.subject}</td>
-                        <td>
-                            <input type="number" 
-                                   value="${grade.score}" 
-                                   onchange="updateGrade('${grade.gradeId}', this.value)"
-                                   class="neumorphic-input" 
-                                   style="width: 5rem; padding: 0.25rem;">
-                        </td>
-                    </tr>
-                `).join('');
+                renderGradesTable(grades);
                 
             } catch (error) {
                 console.error('Error memuat data admin:', error);
                 gradesTable.querySelector('tbody').innerHTML = `
                     <tr>
-                        <td colspan="3" class="text-center">Gagal memuat data nilai</td>
+                        <td colspan="4" class="text-center">Gagal memuat data nilai</td>
                     </tr>
                 `;
             } finally {
@@ -512,23 +568,86 @@
             }
         }
         
-        // Update Grade
+        // Render Grades Table
+        function renderGradesTable(grades) {
+            gradesTable.querySelector('tbody').innerHTML = grades.map(grade => `
+                <tr data-grade-id="${grade.gradeId}">
+                    <td>${grade.student}</td>
+                    <td>${grade.subject}</td>
+                    <td>
+                        <input type="number" 
+                               value="${grade.score}" 
+                               onchange="updateGrade('${grade.gradeId}', this.value)"
+                               class="neumorphic-input" 
+                               style="width: 5rem; padding: 0.25rem;">
+                    </td>
+                    <td>
+                        <button onclick="updateGradeToSheet('${grade.gradeId}')" class="btn btn-primary">Update</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Filter Siswa
+        function handleFilterStudent() {
+            const filterValue = filterStudent.value.trim().toLowerCase();
+            const filteredGrades = appState.allGrades.filter(grade => 
+                grade.student.toLowerCase().includes(filterValue)
+            );
+            renderGradesTable(filteredGrades);
+        }
+        
+        // Update Grade (Simpan ke memori sementara)
         async function updateGrade(gradeId, score) {
             try {
                 console.log(`Updating grade ${gradeId} with score ${score}`);
+                
+                // Validasi nilai
+                score = parseInt(score);
+                if (score < 0 || score > 100) {
+                    showNotification('Nilai harus antara 0 dan 100');
+                    return;
+                }
+                
+                // Update memori
+                appState.allGrades = appState.allGrades.map(grade => 
+                    grade.gradeId === gradeId ? { ...grade, score: score } : grade
+                );
+                
+                // Tidak langsung simpan ke sheet, tunggu tombol Update
+                console.log('Nilai disimpan di memori:', appState.allGrades.find(g => g.gradeId === gradeId));
+                
+            } catch (error) {
+                console.error('Error updating grade:', error);
+                showNotification('Gagal mengupdate nilai');
+            }
+        }
+        
+        // Update Grade to Google Sheets
+        async function updateGradeToSheet(gradeId) {
+            try {
+                const grade = appState.allGrades.find(g => g.gradeId === gradeId);
+                if (!grade) {
+                    throw new Error('Data nilai tidak ditemukan');
+                }
+                
+                setLoading(true);
+                showNotification('Menyimpan nilai...');
                 
                 await new Promise((resolve, reject) => {
                     google.script.run
                         .withSuccessHandler(resolve)
                         .withFailureHandler(reject)
-                        .updateGrade(gradeId, score);
+                        .updateGrade(gradeId, grade.score);
                 });
                 
-                console.log('Nilai berhasil diupdate');
+                showNotification('Nilai berhasil disimpan ke Google Sheets');
                 
             } catch (error) {
-                console.error('Error updating grade:', error);
-                alert('Gagal mengupdate nilai');
+                console.error('Error updating grade to sheet:', error);
+                showNotification('Gagal menyimpan nilai ke Google Sheets');
+            } finally {
+                setLoading(false);
             }
         }
         
@@ -537,13 +656,18 @@
             const file = profileUpload.files[0];
             
             if (!file) {
-                alert('Pilih file terlebih dahulu');
+                showNotification('Pilih file terlebih dahulu');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showNotification('File terlalu besar, maksimal 5MB');
                 return;
             }
             
             try {
                 setLoading(true, uploadBtn);
-                console.log('Mengupload foto profil...');
+                showNotification('Mengupload foto profil...');
                 
                 const reader = new FileReader();
                 reader.onload = async (e) => {
@@ -564,17 +688,25 @@
                     profilePic.src = photoUrl;
                     if (appState.currentUser) {
                         appState.currentUser.photo = photoUrl;
+                        
+                        // Simpan ke Google Sheets
+                        await new Promise((resolve, reject) => {
+                            google.script.run
+                                .withSuccessHandler(resolve)
+                                .withFailureHandler(reject)
+                                .updateUserPhoto(appState.currentUser.pin, photoUrl);
+                        });
                     }
                     
                     console.log('Foto profil berhasil diupload:', photoUrl);
-                    alert('Foto profil berhasil diupdate');
+                    showNotification('Foto profil berhasil diupdate');
                 };
                 
                 reader.readAsDataURL(file);
                 
             } catch (error) {
                 console.error('Error uploading profile:', error);
-                alert('Gagal mengupload foto profil');
+                showNotification('Gagal mengupload foto profil');
             } finally {
                 setLoading(false, uploadBtn);
                 profileUpload.value = ''; // Reset input file
@@ -586,13 +718,18 @@
             const file = gradesUpload.files[0];
             
             if (!file) {
-                alert('Pilih file terlebih dahulu');
+                showNotification('Pilih file terlebih dahulu');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showNotification('File terlalu besar, maksimal 5MB');
                 return;
             }
             
             try {
                 setLoading(true, uploadGradesBtn);
-                console.log('Mengupload data nilai...');
+                showNotification('Mengupload data nilai...');
                 
                 const reader = new FileReader();
                 reader.onload = async (e) => {
@@ -610,7 +747,7 @@
                     });
                     
                     console.log('Data nilai berhasil diupload');
-                    alert('Data nilai berhasil diupload');
+                    showNotification('Data nilai berhasil diupload');
                     
                     // Reload data
                     loadAdminData();
@@ -620,7 +757,7 @@
                 
             } catch (error) {
                 console.error('Error uploading grades:', error);
-                alert('Gagal mengupload data nilai');
+                showNotification('Gagal mengupload data nilai');
             } finally {
                 setLoading(false, uploadGradesBtn);
                 gradesUpload.value = ''; // Reset input file
@@ -630,6 +767,7 @@
         // Logout
         function logout() {
             appState.currentUser = null;
+            appState.allGrades = [];
             loginForm.reset();
             showPage('login');
             console.log('User logged out');
@@ -653,8 +791,20 @@
             }
         }
         
+        // Show Notification
+        function showNotification(message) {
+            notificationMessage.textContent = message;
+            notification.classList.remove('hidden');
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+        
         // Global function for table updates
         window.updateGrade = updateGrade;
+        window.updateGradeToSheet = updateGradeToSheet;
     </script>
 </body>
 </html>
