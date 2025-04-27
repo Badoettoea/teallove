@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Sekolah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
+        <div class="neumorphic p-6 w-full max-w-md">
+            <h2 class="text-2xl font-semibold text-center text-teal-800 mb-6">Masuk</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <input type="text" id="pin" placeholder="Masukkan PIN" class="neumorphic-input w-full p-3 text-teal-800 focus:outline-none" required>
+                </div>
+                <button type="submit" class="primary-btn w-full p-3 rounded-lg font-medium">Masuk</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Dashboard -->
+    <div id="user-dashboard" class="min-h-screen p-4 hidden">
+        <div class="neumorphic p-6 mb-6">
+            <div class="flex items-center space-x-4">
+                <img id="profile-pic" src="/assets/images/placeholder.png" alt="Profil" class="w-20 h-20 rounded-full">
+                <div>
+                    <h2 id="user-name" class="text-xl font-semibold text-teal-800">Nama User</h2>
+                    <p class="text-teal-600">Siswa</p>
+                </div>
+            </div>
+            <label class="block mt-4">
+                <span class="text-teal-800">Ganti Foto Profil</span>
+                <input type="file" id="profile-upload" accept="image/*" class="mt-2 neumorphic-input w-full p-2">
+            </label>
+        </div>
+        <div class="space-y-4">
+            <h3 class="text-lg font-medium text-teal-800">Nilai</h3>
+            <div id="grades-container" class="space-y-4">
+                <!-- Nilai muncul di sini -->
+            </div>
+        </div>
+        <nav class="fixed bottom-0 left-0 right-0 bg-teal-800 p-4 flex justify-around text-white">
+            <button onclick="showPage('user-dashboard')" class="font-medium">Beranda</button>
+            <button onclick="logout()" class="font-medium">Keluar</button>
+        </nav>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" class="min-h-screen p-4 hidden">
+        <h2 class="text-2xl font-semibold text-teal-800 mb-6">Dashboard Admin</h2>
+        <div class="neumorphic p-6 mb-6">
+            <h3 class="text-lg font-medium text-teal-800 mb-4">Upload Nilai</h3>
+            <input type="file" id="grades-upload" accept=".xlsx,.csv" class="neumorphic-input w-full p-2 mb-4">
+            <button onclick="uploadGrades()" class="primary-btn w-full p-3 rounded-lg font-medium">Upload</button>
+        </div>
+        <div class="neumorphic p-6">
+            <h3 class="text-lg font-medium text-teal-800 mb-4">Edit Nilai</h3>
+            <div id="grades-table" class="overflow-x-auto">
+                <!-- Tabel nilai di sini -->
+            </div>
+        </div>
+        <nav class="fixed bottom-0 left-0 right-0 bg-teal-800 p-4 flex justify-around text-white">
+            <button onclick="showPage('admin-dashboard')" class="font-medium">Beranda</button>
+            <button onclick="logout()" class="font-medium">Keluar</button>
+        </nav>
+    </div>
+
+    <script src="/scripts/main.js"></script>
+</body>
+</html>
