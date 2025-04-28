@@ -6,7 +6,7 @@
     <title>TealLove Login</title>
     <link rel="stylesheet" href="styles/main.css">
     <!-- Script Google Sign-In -->
-    <script src="https://accounts.google.com/gsi/client" async defer onerror="console.error('Gagal load Google API')"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer onerror="console.error('Gagal memuat Google API. Cek koneksi atau firewall.')"></script>
 </head>
 <body>
     <div class="container">
@@ -18,9 +18,11 @@
         </form>
         <!-- Google Sign-In Button -->
         <div id="g_id_onload"
-             data-client_id="MASUKKAN_CLIENT_ID_ASLI_DI_SINI" <!-- Ganti dengan Client ID asli -->
+             data-client_id="300094509327-9i3jckrl1s5cri36g2km79gfgoocga01.apps.googleusercontent.com"
              data-callback="handleCredentialResponse">
         </div>
+        <!-- Tombol Google Sign-In eksplisit -->
+        <div class="g_id_signin" data-type="standard" data-size="large"></div>
     </div>
     <script src="scripts/main.js"></script>
 </body>
