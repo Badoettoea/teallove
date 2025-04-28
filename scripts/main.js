@@ -1,63 +1,83 @@
-// Fungsi untuk handle login dengan PIN
 function handleLogin(event) {
     event.preventDefault();
     const pin = document.getElementById('pin').value;
     console.log('Memproses login dengan PIN:', pin);
 
-    // Cek apakah google tersedia
+    // Cek apakah Google API tersedia
     if (typeof google === 'undefined') {
-        console.error('Google API tidak tersedia. Cek script di index.html.');
-        alert('Gagal login: Google API tidak dimuat.');
-        return;
+        console.warn('Google API tidak tersedia. Pastikan script Google Sign-In dimuat.');
+        alert('Google API gagal dimuat. Cek koneksi internet.');
     }
 
-    // Contoh fungsi response (ganti sesuai kebutuhan)
-    response(pin).then(result => {
-        if (result.success) {
-            window.location.href = 'welcome.html';
-        } else {
-            alert('PIN salah!');
-        }
-    }).catch(error => {
-        console.error('Error saat login:', error);
-        alert('Gagal login: ' + error.message);
-    });
+    // Panggil fungsi response untuk validasi PIN
+    response(pin)
+        .then(result => {
+            if (result.success) {
+                window.location.href = 'welcome.html';
+            } else {
+                alert(result.message || 'PIN salah!');
+            }
+        })
+        .catch(error => {
+            console.error('Error saat login:', error);
+            alert('Gagal login: ' + error.message);
+        });
 }
 
-// Fungsi response (contoh, sesuaikan dengan backend atau Google API)
 function response(pin) {
     return new Promise((resolve, reject) => {
-        // Contoh: validasi PIN sederhana (ganti dengan logika asli)
-        if (pin === '12345') {
-            resolve({ success: true });
-        } else {
-            reject(new Error('PIN salah'));
-        }
-        // Kalo pake Google, contoh:
-        // google.accounts.id.initialize({ client_id: 'YOUR_CLIENT_ID' });
-        // google.accounts.id.prompt();
+        fetch('https://script.google.com/macros/s/AKfycbxmvqx9JXVYtGQw0kyvvw0wsV3MtgpCb3ZiywKVSOIxvoYlrO0GA5IsFPghMu10-g1S/exec', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pin }),
+            mode: 'cors',
+            redirect: 'follow'
+        })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Gagal terhubung ke server: ' + res.status);
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    resolve({ success: true });
+                } else {
+                    reject(new Error(data.message || 'PIN salah'));
+                }
+            })
+            .catch(error => {
+                console.error('Error saat menghubungi Apps Script:', error);
+                reject(error);
+            });
     });
 }
 
-// Fungsi untuk handle Google Sign-In
 function handleCredentialResponse(response) {
-    console.log("Encoded JWT ID token: " + response.credential);
-    // Kirim token ke backend untuk verifikasi (contoh)
-    fetch('/verify-google-token', {
+    console.log('Encoded JWT ID token: ' + response.credential);
+
+    fetch('https://script.google.com/macros/s/AKfycbxmvqx9JXVYtGQw0kyvvw0wsV3MtgpCb3ZiywKVSOIxvoYlrO0GA5IsFPghMu10-g1S/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: response.credential })
+        body: JSON.stringify({ token: response.credential }),
+        mode: 'cors',
+        redirect: 'follow'
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            window.location.href = 'welcome.html';
-        } else {
-            alert('Gagal login dengan Google');
-        }
-    })
-    .catch(error => {
-        console.error('Error verifikasi Google:', error);
-        alert('Gagal login: ' + error.message);
-    });
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Gagal terhubung ke server: ' + res.status);
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                window.location.href = 'welcome.html';
+            } else {
+                alert('Gagal login dengan Google: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error verifikasi Google:', error);
+            alert('Gagal login: ' + error.message);
+        });
 }
